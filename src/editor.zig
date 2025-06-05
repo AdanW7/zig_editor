@@ -2,7 +2,7 @@ const std = @import("std");
 
 const raw = @import("raw.zig");
 
-const TermSize = @import("termSize.zig");
+const TermSize = @import("TermSize.zig");
 
 const Mode = @import("mode.zig").Mode;
 

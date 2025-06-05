@@ -4,7 +4,7 @@ const testing = std.testing;
 pub const raw = @import("raw.zig");
 pub const editor = @import("editor.zig");
 pub const PasteBuffer = @import("PasteBuffer.zig").PasteBuffer;
-pub const TermSize = @import("termSize.zig");
+pub const TermSize = @import("TermSize.zig");
 
 pub const Mode = @import("mode.zig").Mode;
 pub const Cursor = @import("escape_seq.zig").Cursor;
