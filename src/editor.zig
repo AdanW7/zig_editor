@@ -11,7 +11,7 @@ const Screen = @import("escape_seq.zig").Screen;
 const Line   = @import("escape_seq.zig").Line;
 const Color  = @import("escape_seq.zig").Color;
 
-const visual = @import("visualSetup.zig");
+const Visual = @import("visualSetup.zig");
 
 const PasteBuffer = @import("PasteBuffer.zig").PasteBuffer;
 
@@ -35,7 +35,7 @@ pub fn Editor(comptime WriterType: type) type {
         writer: WriterType,
         leader: ?u8,
         exist: bool,
-        visual_mode:visual.Mode,
+        visual_mode:Visual.Mode,
         visual_anchor_row: usize, //anchors indicate starting positions of visual mode
         visual_anchor_col: usize,
         paste_buffer:PasteBuffer,
@@ -820,14 +820,14 @@ pub fn Editor(comptime WriterType: type) type {
             }
         }
 
-        pub fn getSelectionRange(self: *Self) visual.Selection {
-            var range = visual.Selection{
+        pub fn getSelectionRange(self: *Self) Visual.Selection {
+            var range = Visual.Selection{
             .start_row = self.visual_anchor_row,
             .start_col = self.visual_anchor_col,
             .end_row = self.cursor_row,
             .end_col = self.cursor_col,
             };
-            range = visual.normalizeSelection(range);
+            range = Visual.normalizeSelection(range);
             return range;
         }
 
