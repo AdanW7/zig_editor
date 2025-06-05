@@ -1,3 +1,4 @@
+
 //! posix compatible functions to exit and re-enter canonical terminal mode
 const std = @import("std");
 pub const posix = std.posix;

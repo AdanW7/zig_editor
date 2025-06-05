@@ -4,19 +4,19 @@ const std = @import("std");
 
 pub const ESC = "\x1b";
 
-pub const LINE = enum {
+const LINE = enum {
     clear_remaining,
     clear_whole,
 };
 
 
-pub const SCREEN = enum {
+const SCREEN = enum {
     enter_alt,
     exit_alt,
     clear,
 };
 
-pub const CURSOR = enum {
+const CURSOR = enum {
     pos_top,
     save_pos,
     return_pos,
@@ -30,7 +30,7 @@ pub const CURSOR = enum {
     blinking_bar,
 };
 
-pub const COLOR = enum {
+const COLOR = enum {
     reset,
     fg_black,
     fg_red,

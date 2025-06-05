@@ -1,6 +1,5 @@
 const std = @import("std");
 
-// need to double check all of this code
 pub const PasteBuffer = struct {
     content: std.ArrayList(std.ArrayList(u8)),
     allocator: std.mem.Allocator,

@@ -1,18 +1,18 @@
 const std = @import("std");
 
-const raw = @import("raw.zig");
+const raw = @import("Raw.zig");
 
 const TermSize = @import("TermSize.zig");
 
 const Mode = @import("mode.zig").Mode;
 
 const EscapeSequence = @import("escape_seq.zig").EscapeSequence;
-pub const Cursor = EscapeSequence.Cursor;
-pub const Screen = EscapeSequence.Screen;
-pub const Line   = EscapeSequence.Line;
-pub const Color  = EscapeSequence.Color;
+const Cursor = EscapeSequence.Cursor;
+const Screen = EscapeSequence.Screen;
+const Line   = EscapeSequence.Line;
+const Color  = EscapeSequence.Color;
 
-const Visual = @import("visualSetup.zig");
+const Visual = @import("Visual.zig");
 
 const PasteBuffer = @import("PasteBuffer.zig").PasteBuffer;
 

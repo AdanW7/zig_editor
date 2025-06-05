@@ -3,8 +3,6 @@
 //! only delete comand is dd
 const std = @import("std");
 const lib = @import("zig_term_lib");
-const os = std.os;
-const c = std.c;
 
 
 pub fn main() !void {
@@ -52,7 +50,6 @@ pub fn main() !void {
         switch (zig_editor.mode) {
             .normal => {
                 try zig_editor.writer.print("{s}", .{lib.Cursor(.steady_block).toEscape()});
-
                 try zig_editor.handleNormalMode(char);
             },
             .insert => {
