@@ -6,10 +6,12 @@ const TermSize = @import("TermSize.zig");
 
 const Mode = @import("mode.zig").Mode;
 
-const Cursor = @import("escape_seq.zig").Cursor;
-const Screen = @import("escape_seq.zig").Screen;
-const Line   = @import("escape_seq.zig").Line;
-const Color  = @import("escape_seq.zig").Color;
+const CURSOR = @import("escape_seq.zig").CURSOR;
+const SCREEN = @import("escape_seq.zig").SCREEN;
+const LINE   = @import("escape_seq.zig").LINE;
+const COLOR  = @import("escape_seq.zig").COLOR;
+const EscapeSequence = @import("escape_seq.zig").EscapeSequence;
+
 
 const Visual = @import("visualSetup.zig");
 
@@ -87,12 +89,12 @@ pub fn Editor(comptime WriterType: type) type {
         }
 
         pub fn EnterEditor(self: *Self) !void{
-            try self.writer.print("{s}",.{Screen.enter_alt.toEscape()});
+            try self.writer.print("{s}", .{EscapeSequence.Screen(.enter_alt).toEscape()});
         }
 
         pub fn exitEditor(self:*Self) !void {
-            try self.writer.print("{s}", .{Cursor.show.toEscape()});
-            try self.writer.print("{s}", .{Screen.exit_alt.toEscape()});
+            try self.writer.print("{s}", .{EscapeSequence.Cursor(.show).toEscape()});
+            try self.writer.print("{s}", .{EscapeSequence.Screen(.exit_alt).toEscape()});
             try raw.disableRawMode();
         }
 
@@ -340,14 +342,14 @@ pub fn Editor(comptime WriterType: type) type {
             try self.updateScreenSize();
             self.scroll();
 
-            try self.writer.print("{s}{s}", .{ Screen.clear.toEscape(), Cursor.pos_top.toEscape() });
+            try self.writer.print("{s}{s}", .{EscapeSequence.Screen(.clear).toEscape(),EscapeSequence.Cursor(.pos_top).toEscape()});
 
             var y: usize = 0;
             while (y < self.screen_rows) : (y += 1) {
                 const file_row = y + self.row_offset;
 
                 if (file_row >= self.lines.items.len) {
-                    try self.writer.print("{s}~", .{Color.fg_cyan_bold.toEscape()});
+                    try self.writer.print("{s}~", .{EscapeSequence.Color(.fg_cyan_bold).toEscape()});
                 } else {
                     const line = self.lines.items[file_row];
                     var x: usize = 0;
@@ -361,7 +363,7 @@ pub fn Editor(comptime WriterType: type) type {
 
                         const should_highlight = self.isCharacterSelected(file_row, x);
                         if (should_highlight) {
-                            try self.writer.print("{s}", .{Color.bg_black_bold.toEscape()});
+                            try self.writer.print("{s}", .{EscapeSequence.Color(.bg_black_bold).toEscape()});
                         }
 
                         if (c == '\t') {
@@ -380,7 +382,7 @@ pub fn Editor(comptime WriterType: type) type {
                         }
 
                         if (should_highlight) {
-                            try self.writer.print("{s}", .{Color.reset.toEscape()});
+                            try self.writer.print("{s}", .{EscapeSequence.Color(.reset).toEscape()});
                         }
 
 
@@ -388,7 +390,7 @@ pub fn Editor(comptime WriterType: type) type {
                     }
                 }
 
-                try self.writer.print("{s}", .{Line.clear_remaining.toEscape()});
+                try self.writer.print("{s}", .{EscapeSequence.Line(.clear_remaining).toEscape()});
                 if (y < self.screen_rows - 1) {
                     try self.writer.print("\r\n", .{});
                 }
@@ -396,7 +398,7 @@ pub fn Editor(comptime WriterType: type) type {
 
             // status line at second to last row
             try self.writer.print("\x1b[{d};1H", .{self.screen_rows + 1});
-            try self.writer.print("{s}{s}", .{ Color.bg_yellow_bold.toEscape(), Color.fg_black_bold.toEscape() });
+            try self.writer.print("{s}{s}", .{EscapeSequence.Color(.bg_yellow_bold).toEscape(), EscapeSequence.Color(.fg_black_bold).toEscape()});
 
             const mode_str = switch (self.mode) {
                 .normal => "NORMAL",
@@ -421,14 +423,14 @@ pub fn Editor(comptime WriterType: type) type {
                 self.cursor_col + 1,
             });
 
-            try self.writer.print("{s}{s}", .{ Line.clear_remaining.toEscape(), Color.reset.toEscape() });
+            try self.writer.print("{s}{s}", .{EscapeSequence.Line(.clear_remaining).toEscape(), EscapeSequence.Color(.reset).toEscape()});
 
             // message line at bottom
             try self.writer.print("\x1b[{d};1H", .{self.screen_rows + 2});
             if (self.status_len > 0) {
                 try self.writer.print("{s}", .{self.status_message[0..self.status_len]});
             }
-            try self.writer.print("{s}", .{Line.clear_remaining.toEscape()});
+                try self.writer.print("{s}", .{EscapeSequence.Line(.clear_remaining).toEscape()});
 
             const screen_row = self.cursor_row - self.row_offset + 1;
             const screen_col = self.cursor_col - self.col_offset + 1;
@@ -436,7 +438,7 @@ pub fn Editor(comptime WriterType: type) type {
         }
 
         pub fn handleNormalMode(self: *Self, c: u8) !void {
-            try self.writer.print("{s}",.{Cursor.steady_block.toEscape()});
+            try self.writer.print("{s}", .{EscapeSequence.Cursor(.steady_block).toEscape()});
             if (c == self.leader.?) {
                 self.mode = .leader;
                 self.setStatusMessage("-- LEADER --");
@@ -590,7 +592,7 @@ pub fn Editor(comptime WriterType: type) type {
         }
 
         pub fn handleInsertMode(self: *Self, c: u8) !void {
-            try self.writer.print("{s}",.{Cursor.steady_bar.toEscape()});
+            try self.writer.print("{s}", .{EscapeSequence.Cursor(.steady_bar).toEscape()});
             switch (c) {
                 27 => { // ESC
                     self.mode = .normal;
@@ -619,7 +621,7 @@ pub fn Editor(comptime WriterType: type) type {
         }
 
         pub fn handleLeaderMode(self: *Self, c: u8) !void {
-            try self.writer.print("{s}",.{Cursor.steady_block.toEscape()});
+            try self.writer.print("{s}", .{EscapeSequence.Cursor(.steady_block).toEscape()});
             switch (c) {
                 'w' => {
                     try self.handleCommandMode("w");
@@ -638,7 +640,7 @@ pub fn Editor(comptime WriterType: type) type {
         }
 
         pub fn handleCommandMode(self: *Self, command: []const u8) !void {
-            try self.writer.print("{s}",.{Cursor.blinking_bar.toEscape()});
+            try self.writer.print("{s}", .{EscapeSequence.Cursor(.blinking_bar).toEscape()});
             if (std.mem.eql(u8, command, "q")) {
                 if (self.modified) {
                     self.setStatusMessage("File modified. Use :q! to quit without saving or :w to save");
@@ -698,7 +700,7 @@ pub fn Editor(comptime WriterType: type) type {
 
         /// current iteration only allows for single char options not strings of commands ("d5k":delete up 5lines)
         pub fn handleDeleteMode(self: *Self, c: u8) !void {
-            try self.writer.print("{s}",.{Cursor.steady_block.toEscape()});
+            try self.writer.print("{s}", .{EscapeSequence.Cursor(.steady_block).toEscape()});
             switch (c) {
                 'd' => {
                     try self.deleteLine();
@@ -713,7 +715,7 @@ pub fn Editor(comptime WriterType: type) type {
         }
 
         pub fn handleVisualMode(self: *Self, c:u8) !void{
-            try self.writer.print("{s}",.{Cursor.steady_block.toEscape()});
+            try self.writer.print("{s}", .{EscapeSequence.Cursor(.steady_block).toEscape()});
             switch (c) {
                 'h', 'j', 'k', 'l' => {
                     self.moveCursor(c);

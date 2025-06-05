@@ -7,11 +7,16 @@ pub const PasteBuffer = @import("PasteBuffer.zig").PasteBuffer;
 pub const TermSize = @import("TermSize.zig");
 
 pub const Mode = @import("mode.zig").Mode;
-pub const Cursor = @import("escape_seq.zig").Cursor;
-pub const Screen = @import("escape_seq.zig").Screen;
-pub const Line   = @import("escape_seq.zig").Line;
-pub const Color  = @import("escape_seq.zig").Color;
+pub const EscapeSequence = @import("escape_seq.zig").EscapeSequence;
+pub const CURSOR = @import("escape_seq.zig").CURSOR;
+pub const Cursor = EscapeSequence.Cursor;
+pub const SCREEN = @import("escape_seq.zig").SCREEN;
+pub const Screen = EscapeSequence.Screen;
+pub const LINE   = @import("escape_seq.zig").LINE;
+pub const Line   = EscapeSequence.Line;
+pub const COLOR  = @import("escape_seq.zig").COLOR;
+pub const Color  = EscapeSequence.Color;
 
-const visual = @import("visualSetup.zig");
+pub const visual = @import("visualSetup.zig");
 
 
