@@ -72,34 +72,34 @@ pub const EscapeSequence = union(enum) {
     cursor: CURSOR,
     color: COLOR,
 
-    pub fn Screen(s: SCREEN) EscapeSequence {
-        return EscapeSequence{ .screen = s };
+    pub fn Screen(screen: SCREEN) EscapeSequence {
+        return EscapeSequence{ .screen = screen };
     }
     
-    pub fn Cursor(c: CURSOR) EscapeSequence {
-        return EscapeSequence{ .cursor = c };
+    pub fn Cursor(cursor: CURSOR) EscapeSequence {
+        return EscapeSequence{ .cursor = cursor };
     }
     
-    pub fn Color(c: COLOR) EscapeSequence {
-        return EscapeSequence{ .color = c };
+    pub fn Color(color: COLOR) EscapeSequence {
+        return EscapeSequence{ .color = color };
     }
     
-    pub fn Line(l: LINE) EscapeSequence {
-        return EscapeSequence{ .line = l };
+    pub fn Line(line: LINE) EscapeSequence {
+        return EscapeSequence{ .line = line };
     }
 
     pub fn toEscape(self: EscapeSequence) []const u8 {
         return switch (self) {
-            .line => |l| switch (l) {
+            .line => |line| switch (line) {
                 .clear_remaining => ESC ++ "[0K",
                 .clear_whole => ESC ++ "[2K",
             },
-            .screen => |s| switch (s) {
+            .screen => |screen| switch (screen) {
                 .enter_alt => ESC ++ "[?1049h",
                 .exit_alt => ESC ++ "[?1049l",
                 .clear => ESC ++ "[2J",
             },
-            .cursor => |c| switch (c) {
+            .cursor => |cursor| switch (cursor) {
                 .pos_top => ESC ++ "[H",
                 .save_pos => ESC ++ "[S",
                 .return_pos => ESC ++ "[u",
@@ -112,7 +112,7 @@ pub const EscapeSequence = union(enum) {
                 .steady_bar => ESC ++ "[6 q",
                 .blinking_bar => ESC ++ "[5 q",
             },
-            .color => |c| switch (c) {
+            .color => |color| switch (color) {
                 .reset => ESC ++ "[0m",
                 .fg_black => ESC ++ "[30m",
                 .fg_red => ESC ++ "[31m",
