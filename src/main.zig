@@ -51,28 +51,28 @@ pub fn main() !void {
 
         switch (zig_editor.mode) {
             .normal => {
-                try zig_editor.writer.print("{s}",.{lib.editor.Cursor.steady_block.toEscape()});
+                try zig_editor.writer.print("{s}",.{lib.Cursor.steady_block.toEscape()});
 
                 try zig_editor.handleNormalMode(char);
             },
             .insert => {
-                try zig_editor.writer.print("{s}",.{lib.editor.Cursor.steady_bar.toEscape()});
+                try zig_editor.writer.print("{s}",.{lib.Cursor.steady_bar.toEscape()});
                 try zig_editor.handleInsertMode(char);
             },
             .leader =>{
-                try zig_editor.writer.print("{s}",.{lib.editor.Cursor.steady_block.toEscape()});
+                try zig_editor.writer.print("{s}",.{lib.Cursor.steady_block.toEscape()});
                 try zig_editor.handleLeaderMode(char);
             },
             .delete => {
-                try zig_editor.writer.print("{s}",.{lib.editor.Cursor.steady_block.toEscape()});
+                try zig_editor.writer.print("{s}",.{lib.Cursor.steady_block.toEscape()});
                 try zig_editor.handleDeleteMode(char);
             },
             .visual =>{
-                try zig_editor.writer.print("{s}",.{lib.editor.Cursor.steady_block.toEscape()});
+                try zig_editor.writer.print("{s}",.{lib.Cursor.steady_block.toEscape()});
                 try zig_editor.handleVisualMode(char);
             },
             .command => {
-                try zig_editor.writer.print("{s}",.{lib.editor.Cursor.blinking_bar.toEscape()});
+                try zig_editor.writer.print("{s}",.{lib.Cursor.blinking_bar.toEscape()});
                 if (char == '\r' or char == '\n') {
                     const command = command_buf[0..command_len];
                     try zig_editor.handleCommandMode(command);

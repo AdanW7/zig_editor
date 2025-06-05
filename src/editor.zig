@@ -6,7 +6,7 @@ const termSize = @import("termSize.zig");
 
 const Mode = @import("mode.zig").Mode;
 
-pub const Cursor = @import("escape_seq.zig").Cursor;
+const Cursor = @import("escape_seq.zig").Cursor;
 const Screen = @import("escape_seq.zig").Screen;
 const Line   = @import("escape_seq.zig").Line;
 const Color  = @import("escape_seq.zig").Color;
