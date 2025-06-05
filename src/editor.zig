@@ -2,7 +2,7 @@ const std = @import("std");
 
 const raw = @import("raw.zig");
 
-const termSize = @import("termSize.zig");
+const TermSize = @import("termSize.zig");
 
 const Mode = @import("mode.zig").Mode;
 
@@ -46,7 +46,7 @@ pub fn Editor(comptime WriterType: type) type {
             var lines = std.ArrayList(std.ArrayList(u8)).init(allocator);
             try lines.append(std.ArrayList(u8).init(allocator)); // init row 1
 
-            const term_size = try termSize.getTerminalSize();
+            const term_size = try TermSize.getTerminalSize();
 
             const paste_buffer = PasteBuffer.init(allocator);
 
@@ -97,7 +97,7 @@ pub fn Editor(comptime WriterType: type) type {
         }
 
         pub fn updateScreenSize(self: *Self) !void {
-            const term_size = try termSize.getTerminalSize();
+            const term_size = try TermSize.getTerminalSize();
             self.screen_rows = if (term_size.rows >= 2) term_size.rows - 2 else 1;
             self.screen_cols = term_size.cols;
         }
