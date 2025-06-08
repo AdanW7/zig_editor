@@ -9,13 +9,12 @@ const Mode = @import("mode.zig").Mode;
 const EscapeSequence = @import("escape_seq.zig").EscapeSequence;
 const Cursor = EscapeSequence.Cursor;
 const Screen = EscapeSequence.Screen;
-const Line   = EscapeSequence.Line;
-const Color  = EscapeSequence.Color;
+const Line = EscapeSequence.Line;
+const Color = EscapeSequence.Color;
 
 const Visual = @import("Visual.zig");
 
 const PasteBuffer = @import("PasteBuffer.zig").PasteBuffer;
-
 
 /// provide it with a writertype for example @TypeOf(std.io.getStdOut().writer())
 pub fn Editor(comptime WriterType: type) type {
@@ -31,15 +30,15 @@ pub fn Editor(comptime WriterType: type) type {
         status_len: usize,
         row_offset: usize, // offsets are used for scroll and draw
         col_offset: usize,
-        screen_rows: usize, 
+        screen_rows: usize,
         screen_cols: usize,
         writer: WriterType,
         leader: ?u8,
         exist: bool,
-        visual_mode:Visual.Mode,
+        visual_mode: Visual.Mode,
         visual_anchor_row: usize, //anchors indicate starting positions of visual mode
         visual_anchor_col: usize,
-        paste_buffer:PasteBuffer,
+        paste_buffer: PasteBuffer,
 
         const Self = @This();
 
@@ -87,11 +86,11 @@ pub fn Editor(comptime WriterType: type) type {
             self.paste_buffer.deinit();
         }
 
-        pub fn EnterEditor(self: *Self) !void{
+        pub fn EnterEditor(self: *Self) !void {
             try self.writer.print("{s}", .{Screen(.enter_alt).toEscape()});
         }
 
-        pub fn exitEditor(self:*Self) !void {
+        pub fn exitEditor(self: *Self) !void {
             try self.writer.print("{s}", .{Cursor(.show).toEscape()});
             try self.writer.print("{s}", .{Screen(.exit_alt).toEscape()});
             try raw.disableRawMode();
@@ -167,7 +166,7 @@ pub fn Editor(comptime WriterType: type) type {
                     break;
                 }
             }
-            
+
             if (!has_valid_chars) {
                 return error.NotValidFileName;
             }
@@ -206,28 +205,25 @@ pub fn Editor(comptime WriterType: type) type {
             if (self.cursor_row >= self.lines.items.len) return;
             var line = &self.lines.items[self.cursor_row];
             if (backward) {
-                // delete character behind cursor 
+                // delete character behind cursor
                 if (self.cursor_col > 0 and self.cursor_col <= line.items.len) {
                     const deleted_char = line.items[self.cursor_col - 1];
                     try self.paste_buffer.storeChar(deleted_char);
                     _ = line.orderedRemove(self.cursor_col - 1);
                     self.cursor_col -= 1;
                     self.modified = true;
-                } 
-                else {
+                } else {
                     self.modified = false;
                     return;
                 }
-            }
-            else {
+            } else {
                 // delete character in front of/under cursor
                 if (self.cursor_col < line.items.len) {
                     const deleted_char = line.items[self.cursor_col];
                     try self.paste_buffer.storeChar(deleted_char);
                     _ = line.orderedRemove(self.cursor_col);
                     self.modified = true;
-                } 
-                else{
+                } else {
                     self.modified = false;
                     return;
                 }
@@ -236,12 +232,12 @@ pub fn Editor(comptime WriterType: type) type {
 
         pub fn deleteLine(self: *Self) !void {
             if (self.lines.items.len == 0) return;
-            
+
             if (self.cursor_row >= self.lines.items.len) return;
-            
+
             const line_to_store = [_]std.ArrayList(u8){self.lines.items[self.cursor_row]};
             try self.paste_buffer.storeLines(&line_to_store, true); // true = line-wise
-            
+
             var line_to_delete = self.lines.orderedRemove(self.cursor_row);
             line_to_delete.deinit();
 
@@ -296,8 +292,7 @@ pub fn Editor(comptime WriterType: type) type {
                 'h' => {
                     if (self.cursor_col > 0) {
                         self.cursor_col -= 1;
-                    } 
-                    else if (self.cursor_row > 0) {
+                    } else if (self.cursor_row > 0) {
                         self.cursor_row -= 1;
                         if (self.cursor_row < self.lines.items.len) {
                             self.cursor_col = self.lines.items[self.cursor_row].items.len;
@@ -341,7 +336,7 @@ pub fn Editor(comptime WriterType: type) type {
             try self.updateScreenSize();
             self.scroll();
 
-            try self.writer.print("{s}{s}", .{Screen(.clear).toEscape(),Cursor(.pos_top).toEscape()});
+            try self.writer.print("{s}{s}", .{ Screen(.clear).toEscape(), Cursor(.pos_top).toEscape() });
 
             var y: usize = 0;
             while (y < self.screen_rows) : (y += 1) {
@@ -358,7 +353,6 @@ pub fn Editor(comptime WriterType: type) type {
 
                     while (x < line.items.len and rendered_chars < self.screen_cols) {
                         const c = line.items[x];
-
 
                         const should_highlight = self.isCharacterSelected(file_row, x);
                         if (should_highlight) {
@@ -384,7 +378,6 @@ pub fn Editor(comptime WriterType: type) type {
                             try self.writer.print("{s}", .{Color(.reset).toEscape()});
                         }
 
-
                         x += 1;
                     }
                 }
@@ -397,7 +390,7 @@ pub fn Editor(comptime WriterType: type) type {
 
             // status line at second to last row
             try self.writer.print("\x1b[{d};1H", .{self.screen_rows + 1});
-            try self.writer.print("{s}{s}", .{Color(.bg_yellow_bold).toEscape(), Color(.fg_black_bold).toEscape()});
+            try self.writer.print("{s}{s}", .{ Color(.bg_yellow_bold).toEscape(), Color(.fg_black_bold).toEscape() });
 
             const mode_str = switch (self.mode) {
                 .normal => "NORMAL",
@@ -406,7 +399,7 @@ pub fn Editor(comptime WriterType: type) type {
                 .leader => "Leader",
                 .delete => "Delete",
                 .visual => "Visual",
-                else=> "UNDEFINED_MODE",
+                else => "UNDEFINED_MODE",
             };
 
             const filename = self.filename orelse "[No Name]";
@@ -422,14 +415,14 @@ pub fn Editor(comptime WriterType: type) type {
                 self.cursor_col + 1,
             });
 
-            try self.writer.print("{s}{s}", .{Line(.clear_remaining).toEscape(), Color(.reset).toEscape()});
+            try self.writer.print("{s}{s}", .{ Line(.clear_remaining).toEscape(), Color(.reset).toEscape() });
 
             // message line at bottom
             try self.writer.print("\x1b[{d};1H", .{self.screen_rows + 2});
             if (self.status_len > 0) {
                 try self.writer.print("{s}", .{self.status_message[0..self.status_len]});
             }
-                try self.writer.print("{s}", .{Line(.clear_remaining).toEscape()});
+            try self.writer.print("{s}", .{Line(.clear_remaining).toEscape()});
 
             const screen_row = self.cursor_row - self.row_offset + 1;
             const screen_col = self.cursor_col - self.col_offset + 1;
@@ -551,7 +544,7 @@ pub fn Editor(comptime WriterType: type) type {
                     self.mode = .command;
                     self.setStatusMessage(":");
                 },
-                'v'=>{
+                'v' => {
                     self.mode = .visual;
                     self.visual_mode = .character;
                     self.visual_anchor_row = self.cursor_row;
@@ -578,7 +571,7 @@ pub fn Editor(comptime WriterType: type) type {
                 'P' => {
                     try self.paste(true); // true = paste before
                 },
-                3 =>{
+                3 => {
                     self.setStatusMessage("Type :q! from Normal mode and press <Enter> to force quit this editor");
                 },
                 'y' => {
@@ -624,7 +617,7 @@ pub fn Editor(comptime WriterType: type) type {
             switch (c) {
                 'w' => {
                     try self.handleCommandMode("w");
-                    self.mode = .normal; 
+                    self.mode = .normal;
                 },
                 'q' => {
                     try self.handleCommandMode("q");
@@ -646,11 +639,9 @@ pub fn Editor(comptime WriterType: type) type {
                     return;
                 }
                 self.exist = false;
-            }
-            else if (std.mem.eql(u8, command, "q!")) {
+            } else if (std.mem.eql(u8, command, "q!")) {
                 self.exist = false;
-            }
-            else if (std.mem.eql(u8, command, "w")) {
+            } else if (std.mem.eql(u8, command, "w")) {
                 self.saveFile() catch |err| switch (err) {
                     error.NoFilenameProvided => {
                         self.setStatusMessage("File modified. Use :q! to quit without saving or :w to save");
@@ -660,9 +651,7 @@ pub fn Editor(comptime WriterType: type) type {
                     },
                     else => return err,
                 };
-
-            }
-            else if (std.mem.eql(u8, command, "wq")) {
+            } else if (std.mem.eql(u8, command, "wq")) {
                 self.saveFile() catch |err| switch (err) {
                     error.NoFilenameProvided => {
                         self.setStatusMessage("File modified. Use :q! to quit without saving or :w to save");
@@ -675,8 +664,7 @@ pub fn Editor(comptime WriterType: type) type {
                     else => return err,
                 };
                 self.exist = false;
-            }
-            else if (std.mem.startsWith(u8, command, "w ")) {
+            } else if (std.mem.startsWith(u8, command, "w ")) {
                 const filename = std.mem.trim(u8, command[2..], " ");
                 if (self.filename) |old_name| {
                     self.allocator.free(old_name);
@@ -688,8 +676,7 @@ pub fn Editor(comptime WriterType: type) type {
                     },
                     else => return err,
                 };
-            }
-            else {
+            } else {
                 var msg_buf: [256]u8 = undefined;
                 const msg = try std.fmt.bufPrint(msg_buf[0..], "Unknown command: {s}", .{command});
                 self.setStatusMessage(msg);
@@ -705,15 +692,15 @@ pub fn Editor(comptime WriterType: type) type {
                     try self.deleteLine();
                 },
                 else => {
-                var msg_buf: [64]u8 = undefined;
-                const msg = try std.fmt.bufPrint(msg_buf[0..], "Unknown delete command: d{c}", .{c});
-                self.setStatusMessage(msg);
+                    var msg_buf: [64]u8 = undefined;
+                    const msg = try std.fmt.bufPrint(msg_buf[0..], "Unknown delete command: d{c}", .{c});
+                    self.setStatusMessage(msg);
                 },
             }
             self.mode = .normal;
         }
 
-        pub fn handleVisualMode(self: *Self, c:u8) !void{
+        pub fn handleVisualMode(self: *Self, c: u8) !void {
             try self.writer.print("{s}", .{Cursor(.steady_block).toEscape()});
             switch (c) {
                 'h', 'j', 'k', 'l' => {
@@ -823,10 +810,10 @@ pub fn Editor(comptime WriterType: type) type {
 
         pub fn getSelectionRange(self: *Self) Visual.Selection {
             var range = Visual.Selection{
-            .start_row = self.visual_anchor_row,
-            .start_col = self.visual_anchor_col,
-            .end_row = self.cursor_row,
-            .end_col = self.cursor_col,
+                .start_row = self.visual_anchor_row,
+                .start_col = self.visual_anchor_col,
+                .end_row = self.cursor_row,
+                .end_col = self.cursor_col,
             };
             range = Visual.normalizeSelection(range);
             return range;
@@ -834,9 +821,9 @@ pub fn Editor(comptime WriterType: type) type {
 
         fn isCharacterSelected(self: *Self, row: usize, col: usize) bool { //used in draw
             if (self.visual_mode == .none) return false;
-            
+
             const range = self.getSelectionRange();
-            
+
             switch (self.visual_mode) {
                 .character => {
                     if (row < range.start_row or row > range.end_row) return false;
@@ -847,7 +834,7 @@ pub fn Editor(comptime WriterType: type) type {
                     } else if (row == range.end_row) {
                         return col <= range.end_col;
                     } else {
-                        return true; 
+                        return true;
                     }
                 },
                 .line => {
@@ -855,20 +842,20 @@ pub fn Editor(comptime WriterType: type) type {
                 },
                 .block => {
                     return row >= range.start_row and row <= range.end_row and
-                           col >= range.start_col and col <= range.end_col;
+                        col >= range.start_col and col <= range.end_col;
                 },
                 .none => return false,
             }
         }
 
-         pub fn paste(self: *Self, before: bool) !void {
+        pub fn paste(self: *Self, before: bool) !void {
             if (self.paste_buffer.content.items.len == 0) return;
-            if (self.cursor_row >= self.lines.items.len ) return;
-            
+            if (self.cursor_row >= self.lines.items.len) return;
+
             if (self.paste_buffer.is_line_wise) {
                 // Line-wise paste
                 const insert_row = if (before) self.cursor_row else self.cursor_row + 1;
-                
+
                 for (self.paste_buffer.content.items, 0..) |paste_line, i| {
                     var new_line = std.ArrayList(u8).init(self.allocator);
                     try new_line.appendSlice(paste_line.items);
@@ -878,7 +865,7 @@ pub fn Editor(comptime WriterType: type) type {
                 if (!before) {
                     self.cursor_row += 1;
                     if (self.cursor_row >= self.lines.items.len) {
-                    self.cursor_row = self.lines.items.len - 1; 
+                        self.cursor_row = self.lines.items.len - 1;
                     }
                 }
                 self.cursor_col = 0;
@@ -890,15 +877,15 @@ pub fn Editor(comptime WriterType: type) type {
                     const line_len = current_line.items.len;
                     var insert_col = if (before) self.cursor_col else self.cursor_col + 1;
                     if (insert_col > line_len) {
-                        insert_col = line_len; 
+                        insert_col = line_len;
                     }
                     for (paste_line.items, 0..) |char, i| {
                         try current_line.insert(insert_col + i, char);
                     }
                     if (!before) {
                         self.cursor_col += paste_line.items.len;
-                         if (self.cursor_col > current_line.items.len) {
-                            self.cursor_col = current_line.items.len; 
+                        if (self.cursor_col > current_line.items.len) {
+                            self.cursor_col = current_line.items.len;
                         }
                     }
                 }
